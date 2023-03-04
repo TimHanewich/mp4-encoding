@@ -10,36 +10,51 @@ namespace Mp4Encoding
     {
         public static void Main(string[] args)
         {
-            byte[] data = RandomBytes(2764800);
-
-            //Bitmap bm = BytesToBitmap(data);
-            Bitmap bm = CreateInfoBitmap(2000000);
-            bm.Save(@"C:\Users\timh\Downloads\tah\mp4-encoding\output.png");
+            Encode(@"C:\Users\timh\Downloads\tah\mp4-encoding\test.mp4", @"C:\Users\timh\Downloads\tah\mp4-encoding\output");
         }
 
         public static void Encode(string file_path, string output_dir)
         {
             //Open the file
             FileStream fs = System.IO.File.Open(file_path, FileMode.Open);
-            StreamReader sr = new StreamReader(fs);
 
 
-
-            //Parse
-            while (true)
+            //Write main content
+            int last_slide_contains_bytes = 0;
+            int on_img = 1;
+            List<byte> hopper = new List<byte>();
+            bool StreamEmpty = false;
+            while (StreamEmpty == false)
             {
-
-                //Read the next byte and cancel out if it was -1 (end of stream)
-                int next_byte = sr.Read();
-                if (next_byte == -1)
+                int val = fs.ReadByte();
+                if (val == -1)
                 {
-                    break;
+                    StreamEmpty = true;
+                }
+                else
+                {
+                    hopper.Add(Convert.ToByte(val));
                 }
 
+                //if the hopper is now full (2,764,800 bytes) OR the stream was finished but we have some to write, generate an image, save it, and clear the hopper
+                if (hopper.Count == 2764800 || (StreamEmpty == true && hopper.Count > 0))
+                {
+                    Bitmap bm = BytesToBitmap(hopper.ToArray());
+                    string path = System.IO.Path.Combine(output_dir, on_img.ToString() + ".png");
+                    bm.Save(path); //save
+                    last_slide_contains_bytes = hopper.Count;
+                    hopper.Clear(); //clear the hopper
 
-
-
+                    //Increment on_img
+                    on_img = on_img + 1;
+                }
             }
+
+            //Write the final slide - the info slide
+            Bitmap bmi = CreateInfoBitmap(last_slide_contains_bytes);
+            string pathi = System.IO.Path.Combine(output_dir, on_img.ToString() + ".png");
+            bmi.Save(pathi); //save
+
         }
 
 
@@ -120,6 +135,39 @@ namespace Mp4Encoding
 
             return ToReturn;
         }
+
+        
+
+
+        public static byte[] BitmapToBytes(Bitmap bm, int? bytes_limits = null)
+        {
+            List<byte> bytes = new List<byte>();
+
+            //Read
+            for (int y = 0; y < bm.Height; y++)
+            {
+                for (int x = 0; x < bm.Width; x++)
+                {
+                    Color c = bm.GetPixel(x, y);
+                    bytes.Add(c.R);
+                    bytes.Add(c.G);
+                    bytes.Add(c.B);
+                }
+            }
+
+            //If there was a limit on the number of bytes I am supposed to read from this, take them out one by one
+            if (bytes_limits.HasValue)
+            {
+                while (bytes.Count > bytes_limits.Value)
+                {
+                    bytes.RemoveAt(bytes.Count - 1); //Trim off the end
+                }
+            }
+            
+            return bytes.ToArray();
+        }
+
+
 
         # region "toolkit"
 
