@@ -13,6 +13,8 @@ namespace Mp4Encoding
             Encode(@"C:\Users\timh\Downloads\tah\mp4-encoding\test.mp4", @"C:\Users\timh\Downloads\tah\mp4-encoding\output");
         }
 
+        # region "encoding"
+
         public static void Encode(string file_path, string output_dir)
         {
             //Open the file
@@ -136,8 +138,9 @@ namespace Mp4Encoding
             return ToReturn;
         }
 
+        # endregion
         
-
+        # region "decoding"
 
         public static byte[] BitmapToBytes(Bitmap bm, int? bytes_limits = null)
         {
@@ -167,7 +170,7 @@ namespace Mp4Encoding
             return bytes.ToArray();
         }
 
-
+        # endregion
 
         # region "toolkit"
 
