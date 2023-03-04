@@ -11,10 +11,9 @@ namespace Mp4Encoding
         public static void Main(string[] args)
         {
             byte[] data = RandomBytes(2764800);
-            Console.WriteLine(data.Length.ToString("#,##0"));
-            Console.ReadLine();
 
-            Bitmap bm = BytesToBitmap(data);
+            //Bitmap bm = BytesToBitmap(data);
+            Bitmap bm = CreateInfoBitmap(2000000);
             bm.Save(@"C:\Users\timh\Downloads\tah\mp4-encoding\output.png");
         }
 
@@ -101,6 +100,23 @@ namespace Mp4Encoding
                     x = x + 1;
                 }
             }
+
+            return ToReturn;
+        }
+
+        public static Bitmap CreateInfoBitmap(int bytes_on_last)
+        {
+            Bitmap ToReturn = new Bitmap(1280, 720);
+            byte[] bytes = BitConverter.GetBytes(bytes_on_last);
+
+            //Add it
+            int x = 0;
+            foreach (byte b in bytes)
+            {
+                int i = Convert.ToInt32(b);
+                ToReturn.SetPixel(x, 0, Color.FromArgb(i, i, i));
+                x = x + 1;
+            } 
 
             return ToReturn;
         }
