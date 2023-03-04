@@ -11,6 +11,7 @@ namespace Mp4Encoding
         public static void Main(string[] args)
         {
             //Encode(@"C:\Users\timh\Downloads\tah\mp4-encoding\test.mp4", @"C:\Users\timh\Downloads\tah\mp4-encoding\output");
+            Decode(@"C:\Users\timh\Downloads\tah\mp4-encoding\output", @"C:\Users\timh\Downloads\tah\mp4-encoding\output.mp4");
         }
 
         # region "encoding"
@@ -141,6 +142,64 @@ namespace Mp4Encoding
         # endregion
         
         # region "decoding"
+
+        public static void Decode(string frames_dir, string output)
+        {
+            string[] imagepaths = System.IO.Directory.GetFiles(frames_dir);
+
+            //Add all to a list
+            List<string> images = new List<string>();
+            images.AddRange(imagepaths);
+
+            //Sort the list
+            List<string> images_sorted = new List<string>();
+            while (images.Count > 0)
+            {
+                int winner_number = int.MaxValue;
+                string winner = images[0];
+                foreach (string s in images)
+                {
+                    int this_number = Convert.ToInt32(System.IO.Path.GetFileNameWithoutExtension(s));
+                    if (this_number < winner_number)
+                    {
+                        winner = s;
+                        winner_number = this_number;
+                    }
+                }
+
+                //Add it
+                images_sorted.Add(winner);
+                images.Remove(winner);
+            }
+
+            //Get the total number of bytes the last payload (content) slide should have
+            int bytes_in_last = DecodeInfoBitmap(new Bitmap(images_sorted[images_sorted.Count - 1]));
+
+            //Create the ouput
+            FileStream fs = System.IO.File.Create(output);
+
+            //Go through each EXCEPT the last one - since the last one is supposed to be the info slide
+            for (int f = 0; f < images_sorted.Count - 1; f++)
+            {
+                //How many bytes should we read from this particular slide
+                int bytes_to_read = int.MaxValue; //Default is read as many as needed (to end of picture)
+                if (f == images_sorted.Count - 2) //The penultimate (one right before the info slide)
+                {
+                    bytes_to_read = bytes_in_last;
+                }
+
+                //Read the bitmap
+                Bitmap bm = new Bitmap(images_sorted[f]);
+                byte[] bytes = BitmapToBytes(bm, bytes_to_read);
+
+                //Write the bytes to the stream
+                fs.Write(bytes, 0, bytes.Length);
+            }
+
+            //Close the stream
+            fs.Close();
+
+        }
 
         public static byte[] BitmapToBytes(Bitmap bm, int? bytes_limits = null)
         {
