@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using TimHanewich.Toolkit;
 
 namespace Mp4Encoding
 {
@@ -9,7 +10,8 @@ namespace Mp4Encoding
     {
         public static void Main(string[] args)
         {
-            byte[] data = RandomBytes(1280);
+            byte[] data = RandomBytes(100000);
+
             Bitmap bm = BytesToBitmap(data);
             bm.Save(@"C:\Users\timh\Downloads\tah\mp4-encoding\output.png");
         }
@@ -44,6 +46,7 @@ namespace Mp4Encoding
         public static Bitmap BytesToBitmap(byte[] bytes)
         {
 
+
             //If the number of bytes supplied exceeds 921,600, throw an error
             if (bytes.Length > 921600)
             {
@@ -51,31 +54,51 @@ namespace Mp4Encoding
             }
 
             Bitmap ToReturn = new Bitmap(1280, 720);
+            ByteArrayManager bam = new ByteArrayManager(bytes);
             
             //Write each byte
             int x = 0;
             int y = 0;
-            for (int b = 0; b < bytes.Length; b++)
+            bool ByteArrayManagerHasMore = true;
+            while ((x == 0 && y == 720) == false)
             {
                 
-                int b_ = Convert.ToInt32(bytes[b]);
-                ToReturn.SetPixel(x, y, Color.FromArgb(b_, b_, b_));
+                //Gather 3 colors
+                List<byte> NextColor = new List<byte>();
+                while (NextColor.Count < 3 && ByteArrayManagerHasMore)
+                {
+                    try
+                    {
+                        byte b = bam.NextByte();
+                        NextColor.Add(b);
+                    }
+                    catch
+                    {
+                        ByteArrayManagerHasMore = false;
+                    }
+                }
+
+                //If there are less than three colors, keep adding 0 for the remaining colors until
+                while (NextColor.Count < 3)
+                {
+                    NextColor.Add(0);
+                }
+
+                //Set the pixel
+                ToReturn.SetPixel(x, y, Color.FromArgb(Convert.ToInt32(NextColor[0]), Convert.ToInt32(NextColor[1]), Convert.ToInt32(NextColor[2])));
                 
-                //Move x and y if needed
+
+                //Increment position in bitmap
                 if (x == 1279)
                 {
-                    Console.WriteLine("Going down a line");
-                    y = y + 1; //Go down a row
-                    x = 0; //Go back to the start (left side)
+                    y = y + 1;
+                    x = 0;
                 }
-                else //Increment one over
+                else
                 {
-                    Console.WriteLine("Going over one");
                     x = x + 1;
                 }
             }
-
-            
 
             return ToReturn;
         }
