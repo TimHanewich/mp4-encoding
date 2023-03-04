@@ -10,7 +10,7 @@ namespace Mp4Encoding
     {
         public static void Main(string[] args)
         {
-            Encode(@"C:\Users\timh\Downloads\tah\mp4-encoding\test.mp4", @"C:\Users\timh\Downloads\tah\mp4-encoding\output");
+            //Encode(@"C:\Users\timh\Downloads\tah\mp4-encoding\test.mp4", @"C:\Users\timh\Downloads\tah\mp4-encoding\output");
         }
 
         # region "encoding"
@@ -168,6 +168,18 @@ namespace Mp4Encoding
             }
             
             return bytes.ToArray();
+        }
+
+        public static int DecodeInfoBitmap(Bitmap bm)
+        {
+            byte b1 = bm.GetPixel(0, 0).R;
+            byte b2 = bm.GetPixel(1, 0).R;
+            byte b3 = bm.GetPixel(2, 0).R;
+            byte b4 = bm.GetPixel(3, 0).R;
+            byte[] bytes = new byte[]{b1, b2, b3, b4};
+
+            int ToReturn = BitConverter.ToInt32(bytes, 0);
+            return ToReturn;
         }
 
         # endregion
