@@ -10,7 +10,9 @@ namespace Mp4Encoding
     {
         public static void Main(string[] args)
         {
-            byte[] data = RandomBytes(100000);
+            byte[] data = RandomBytes(2764800);
+            Console.WriteLine(data.Length.ToString("#,##0"));
+            Console.ReadLine();
 
             Bitmap bm = BytesToBitmap(data);
             bm.Save(@"C:\Users\timh\Downloads\tah\mp4-encoding\output.png");
@@ -42,13 +44,13 @@ namespace Mp4Encoding
         }
 
 
-        //Converts 921,600 bytes or less to a bitmap (921,600 because we are targeting a 1280x720 resolution)
+        //Converts 2,764,800 bytes or less to a bitmap (2,764,800 because we are targeting a 1280x720 resolution and each pixel can hold 3 bytes (R, G, B))
         public static Bitmap BytesToBitmap(byte[] bytes)
         {
 
 
-            //If the number of bytes supplied exceeds 921,600, throw an error
-            if (bytes.Length > 921600)
+            //If the number of bytes supplied exceeds the limit, throw an error
+            if (bytes.Length > 2765800)
             {
                 throw new Exception("The maximum number of bytes that can be converted into a single 1280x720 bitmap is 921,600. You supplied " + bytes.Length.ToString("#,##0") + ".");
             }
