@@ -10,8 +10,15 @@ namespace Mp4Encoding
     {
         public static void Main(string[] args)
         {
-            //Encode(@"C:\Users\timh\Downloads\tah\mp4-encoding\test.mp4", @"C:\Users\timh\Downloads\tah\mp4-encoding\output");
-            Decode(@"C:\Users\timh\Downloads\tah\mp4-encoding\output", @"C:\Users\timh\Downloads\tah\mp4-encoding\output.mp4");
+            FrameConfiguration fc = new FrameConfiguration();
+            fc.CellsHorizontal = 5;
+            fc.CellsVertical = 5;
+            fc.FrameHeight = 50;
+            fc.FrameWidth = 50;
+            fc.Data = RandomBytes(70000);
+
+            XYPair[] cell = fc.SelectCellPixels(24);
+            Console.WriteLine(JsonConvert.SerializeObject(cell, Formatting.Indented));
         }
 
         # region "encoding"
