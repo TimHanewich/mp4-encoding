@@ -11,14 +11,14 @@ namespace Mp4Encoding
         public static void Main(string[] args)
         {
             FrameConfiguration fc = new FrameConfiguration();
-            fc.CellsHorizontal = 5;
-            fc.CellsVertical = 5;
-            fc.FrameHeight = 50;
-            fc.FrameWidth = 50;
-            fc.Data = RandomBytes(70000);
+            fc.FrameHeight = 720;
+            fc.FrameWidth = 1280;
+            fc.CellsHorizontal = 40;
+            fc.CellsVertical = 24;
+            fc.Data = RandomBytes(301);
 
-            XYPair[] cell = fc.SelectCellPixels(24);
-            Console.WriteLine(JsonConvert.SerializeObject(cell, Formatting.Indented));
+            Bitmap bm = fc.ToBitmap();
+            bm.Save(@"C:\Users\timh\Downloads\tah\mp4-encoding\output.png");
         }
 
         # region "encoding"

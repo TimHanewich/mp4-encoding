@@ -1,17 +1,17 @@
 using System;
 using System.Drawing;
+using TimHanewich.Toolkit;
 
 namespace Mp4Encoding
 {
     public class FrameConfiguration
     {
+        public int FrameWidth {get; set;}
+        public int FrameHeight {get; set;}
         public int CellsHorizontal {get; set;}
         public int CellsVertical {get; set;}
         public byte[] Data {get; set;}
-
-        public int FrameWidth {get; set;}
-        public int FrameHeight {get; set;}
-
+        
         public FrameConfiguration()
         {
             Data = new byte[]{};
@@ -97,9 +97,59 @@ namespace Mp4Encoding
 
         public Bitmap ToBitmap()
         {
+
+            //Make sure all of the data fits in the configuration
+            bool fits = DataFits();
+            if (fits == false)
+            {
+                throw new Exception("Unable to create bitmap with the current configuration: number of cells is insufficient.");
+            }
+
             Bitmap ToReturn = new Bitmap(FrameWidth, FrameHeight);
 
-        
+            ByteArrayManager bam = new ByteArrayManager(Data);
+            bool BytesEmpty = false;
+            int on_cell = 0;
+            while (BytesEmpty == false)
+            {
+                //Select until we cannot anymore
+                List<byte> rgb = new List<byte>();
+                while (rgb.Count < 3 && (BytesEmpty == false))
+                {
+                    try
+                    {
+                        byte b = bam.NextByte();
+                        rgb.Add(b);
+                    }
+                    catch
+                    {
+                        BytesEmpty = true;
+                    }
+                }
+
+                //Only proceed if there is at least SOME data to keep going with... something worth writing.
+                if (rgb.Count > 0)
+                {
+                    //If it is still not full (3 colors), fill it in with black (0)
+                    while (rgb.Count < 3)
+                    {
+                        rgb.Add(0);
+                    }
+
+                    //Get the color
+                    Color c = Color.FromArgb(Convert.ToInt32(rgb[0]), Convert.ToInt32(rgb[1]), Convert.ToInt32(rgb[2]));
+                
+                    XYPair[] pixels = SelectCellPixels(on_cell);
+                    foreach (XYPair xy in pixels)
+                    {
+                        ToReturn.SetPixel(xy.X, xy.Y, c);
+                    }
+                    on_cell = on_cell + 1;
+                }
+
+                
+            }
+
 
             return ToReturn;
         }
